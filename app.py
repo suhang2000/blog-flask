@@ -12,14 +12,14 @@ CORS(app, supports_credentials=True)
 1.返回的是json数据
 2.结构如下
 {
-    resCode： 200, # 非200即错误
+    code： 200, # 非200即错误
     data： # 数据位置，一般为数组
     message： '对本次请求的说明'
 }
 """
 
 
-@app.route('/api/login', methods=['GET'])
+@app.route('/api/login/user', methods=['GET'])
 def login():
     userid = ''
     password = ''
@@ -33,13 +33,13 @@ def login():
     # print(result)
     if result:
         resData = {
-            "resCode": 200,
+            "code": 200,
             "data": userid,
             "message": 'login succeed'
         }
     else:
         resData = {
-            "resCode": 400,
+            "code": 400,
             "data": '',
             "message": 'login failed'
         }

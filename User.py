@@ -31,5 +31,5 @@ class User:
             result = True
         else:
             result = False
-            print('there is no user where userid="%s and password="%s"!!' % (userid, password))
+            print('there is no user where userid="%s" and password="%s"!!' % (userid, password))
         return result
