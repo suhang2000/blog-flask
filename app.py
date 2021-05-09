@@ -46,5 +46,27 @@ def login():
     return jsonify(resData)
 
 
+@app.route('/api/register/user', methods=['POST'])
+def register():
+    resData = {
+        "code": 400,
+        "data": '',
+        "message": 'register failed'
+    }
+    data = request.get_data()
+    if data is not None:
+        data = json.loads(data)
+        print('data: ', data)
+        user = User()
+        result = user.insert_user(data)
+        if result:
+            resData = {
+                "code": 200,
+                "data": '',
+                "message": 'register succeed'
+            }
+    return jsonify(resData)
+
+
 if __name__ == '__main__':
     app.run(debug=True)

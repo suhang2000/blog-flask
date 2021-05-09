@@ -33,3 +33,29 @@ class User:
             result = False
             print('there is no user where userid="%s" and password="%s"!!' % (userid, password))
         return result
+
+    def insert_user(self, data: dict) -> bool:
+        keys = ''
+        values = ''
+        for k, v in data.items():
+            keys += k
+            keys += ','
+            values += "'"
+            values += v
+            values += "'"
+            values += ','
+        keys = keys[:-1]
+        values = values[:-1]
+        insert_user_sql = "INSERT INTO user({}) values({});".format(keys, values)
+        print(insert_user_sql)
+        # 执行mysql语句，如果插入成功，则注册成功，否则注册失败
+        try:
+            self.cursor.execute(insert_user_sql)
+            self.conn.commit()
+            print('success')
+            result = True
+        except:
+            print('failed')
+            result = False
+        finally:
+            return result
