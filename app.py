@@ -3,6 +3,7 @@ from flask_cors import CORS
 import json
 from Blog import Blog
 from User import User
+from util import ResData
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -32,27 +33,15 @@ def login():
     result = user.select_user(userid, password)
     # print(result)
     if result:
-        resData = {
-            "code": 200,
-            "data": userid,
-            "message": 'login succeed'
-        }
+        resData = ResData(200, userid, 'login succeed')
     else:
-        resData = {
-            "code": 400,
-            "data": '',
-            "message": 'login failed'
-        }
+        resData = ResData(400, '', 'login failed')
     return jsonify(resData)
 
 
 @app.route('/api/register/user', methods=['POST'])
 def register():
-    resData = {
-        "code": 400,
-        "data": '',
-        "message": 'register failed'
-    }
+    resData = ResData(400, '', 'register failed')
     data = request.get_data()
     if data is not None:
         data = json.loads(data)
@@ -60,11 +49,7 @@ def register():
         user = User()
         result = user.insert_user(data)
         if result:
-            resData = {
-                "code": 200,
-                "data": '',
-                "message": 'register succeed'
-            }
+            resData = ResData(200, '', 'register succeed')
     return jsonify(resData)
 
 
