@@ -53,5 +53,25 @@ def register():
     return jsonify(resData)
 
 
+@app.route('/api/resetpwd/user', methods=['POST'])
+def reset_user_pwd():
+    resData = {
+        "code": 400,
+        "data": '',
+        "message": 'register failed'
+    }
+    data = request.get_data()
+    if data is not None:
+        data = json.loads(data)
+        print('data: ', data)
+        del data['phone_number']
+        print(data)
+        user = User()
+        result = user.update_user(data)
+        if result:
+            resData = ResData(200, '', 'register succeed')
+    return jsonify(resData)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
