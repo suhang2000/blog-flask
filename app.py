@@ -102,7 +102,7 @@ def selectuser():
 
 @app.route('/api/select/user/page', methods=['POST'])
 def selectuserbypage():
-    pagesize = 2
+    pagesize = 10
     datas = request.get_data()
     datas = json.loads(datas)
     data = {}
