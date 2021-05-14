@@ -158,5 +158,83 @@ def fixuser():
         return jsonify(resData)
 
 
+@app.route('/api/select/article/page', methods=['POST'])
+def selectarticlebypage():
+    pagesize = 2
+    datas = request.get_data()
+    datas = json.loads(datas)
+    data = {}
+    for k, v in datas.items():
+        if k != 'page':
+            data[k] = v
+    print(data)
+    page = int(datas['page']) - 1
+    blog = Blog()
+    result = blog.select_blog_with_conditions(data)
+    total = int(len(result) / pagesize) + 1
+    tempresult = []
+    print(result)
+    if page * pagesize > len(result):
+        result = ''
+    else:
+        pageend = 0
+        if (page + 1) * pagesize > len(result):
+            pageend = len(result)
+        else:
+            pageend = (page + 1) * pagesize
+        i = page * pagesize
+        j = 0
+        while i < pageend:
+            tempresult.append(result[i])
+            i = i + 1
+        result = tempresult
+    result.append({'total': total})
+    print(result)
+    resData = ResData(200, result, 'select succeed')
+    return jsonify(resData)
+
+
+@app.route('/api/fix/article', methods=['POST'])
+def fixarticle():
+    if request.args is not None:
+        data = request.get_data()
+        data = json.loads(data)
+        uid = data['blog_id']
+        u_id = str(uid)
+        data['blog_id'] = u_id
+        blog = Blog()
+        result = blog.select_blog_with_conditions({'blog_id': data['blog_id']})
+        print(data)
+        if len(result) == 1:
+            result = blog.fix_blog_information(data)
+            if result == 1:
+                resData = ResData(200, '', 'fix succeed')
+            else:
+                resData = ResData(200, '', 'fix failed')
+        else:
+            resData = ResData(400, '', 'select failed')
+        return jsonify(resData)
+
+@app.route('/api/delete/article', methods=['POST'])
+def deletearticle():
+    if request.args is not None:
+        data = request.get_data()
+        data = json.loads(data)
+        uid = data['blog_id']
+        u_id = str(uid)
+        data['blog_id'] = u_id
+        blog = Blog()
+        result = blog.select_blog(data['blog_id'])
+        print(data)
+        if result == True:
+            result = blog.delete_blog(data['blog_id'])
+            if result == True:
+                resData = ResData(200, '', 'delete succeed')
+            else:
+                resData = ResData(400, '', 'delete failed')
+        else:
+            resData = ResData(400, '', 'delete failed')
+        return jsonify(resData)
+
 if __name__ == '__main__':
     app.run(debug=True)
