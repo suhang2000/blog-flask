@@ -39,6 +39,7 @@ def login():
         resData = ResData(400, '', 'login failed')
     return jsonify(resData)
 
+
 @app.route('/api/login/admin', methods=['GET'])
 def admin_login():
     admin_id = ''
@@ -52,18 +53,11 @@ def admin_login():
     result = admin.select_admin(admin_id, admin_password)
     # print(result)
     if result:
-        resData = {
-            "code": 200,
-            "data": admin_id,
-            "message": 'login succeed'
-        }
+        resData = ResData(200, admin_id, 'login succeed')
     else:
-        resData = {
-            "code": 400,
-            "data": '',
-            "message": 'login failed'
-        }
+        resData = ResData(400, '', 'login failed')
     return jsonify(resData)
+
 
 @app.route('/api/register/user', methods=['POST'])
 def register():
@@ -81,11 +75,7 @@ def register():
 
 @app.route('/api/resetpwd/user', methods=['POST'])
 def reset_user_pwd():
-    resData = {
-        "code": 400,
-        "data": '',
-        "message": 'register failed'
-    }
+    resData = ResData(400, '', 'register failed')
     data = request.get_data()
     if data is not None:
         data = json.loads(data)
@@ -98,6 +88,7 @@ def reset_user_pwd():
             resData = ResData(200, '', 'register succeed')
     return jsonify(resData)
 
+
 @app.route('/api/select/user', methods=['POST'])
 def selectuser():
     data = request.get_data()
@@ -105,12 +96,9 @@ def selectuser():
     print("data:", data)
     user = User()
     result = user.select_user_with_conditions(data)
-    resData = {
-        "code":200,
-        "data":result,
-        "message":'select succeed'
-    }
+    resData = ResData(200, result, 'select succeed')
     return jsonify(resData)
+
 
 @app.route('/api/select/user/page', methods=['POST'])
 def selectuserbypage():
@@ -118,25 +106,25 @@ def selectuserbypage():
     datas = request.get_data()
     datas = json.loads(datas)
     data = {}
-    for k,v in datas.items():
+    for k, v in datas.items():
         if k != 'page':
             data[k] = v
     print(data)
     page = int(datas['page']) - 1
     user = User()
     result = user.select_user_with_conditions(data)
-    total = int(len(result)/pagesize) + 1
+    total = int(len(result) / pagesize) + 1
     tempresult = []
     print(result)
-    if page*pagesize > len(result):
+    if page * pagesize > len(result):
         result = ''
-    else :
+    else:
         pageend = 0
-        if (page+1)*pagesize > len(result):
+        if (page + 1) * pagesize > len(result):
             pageend = len(result)
         else:
-            pageend = (page+1)*pagesize
-        i = page*pagesize
+            pageend = (page + 1) * pagesize
+        i = page * pagesize
         j = 0
         while i < pageend:
             tempresult.append(result[i])
@@ -144,12 +132,9 @@ def selectuserbypage():
         result = tempresult
     result.append({'total': total})
     print(result)
-    resData = {
-        "code": 200,
-        "data": result,
-        "message": 'select succeed'
-    }
+    resData = ResData(200, result, 'select succeed')
     return jsonify(resData)
+
 
 @app.route('/api/fix/user', methods=['POST'])
 def fixuser():
@@ -165,25 +150,12 @@ def fixuser():
         if len(result) == 1:
             result = user.fix_user_information(data)
             if result == 1:
-                resData = {
-                    "code": 200,
-                    "data": '',
-                    "message": 'fix succeed'
-                }
+                resData = ResData(200, '', 'fix succeed')
             else:
-                resData = {
-                    "code": 200,
-                    "data": '',
-                    "message": 'fix failed'
-                }
+                resData = ResData(200, '', 'fix failed')
         else:
-            resData = {
-                "code": 400,
-                "data": '',
-                "message": 'select failed'
-            }
+            resData = ResData(400, '', 'select failed')
         return jsonify(resData)
-
 
 
 if __name__ == '__main__':
