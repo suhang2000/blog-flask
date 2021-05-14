@@ -13,12 +13,10 @@
 
 
 -- 导出 blogdb 的数据库结构
-DROP DATABASE IF EXISTS `blogdb`;
 CREATE DATABASE IF NOT EXISTS `blogdb` /*!40100 DEFAULT CHARACTER SET utf8 */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `blogdb`;
 
 -- 导出  表 blogdb.admin 结构
-DROP TABLE IF EXISTS `admin`;
 CREATE TABLE IF NOT EXISTS `admin` (
   `admin_id` int NOT NULL AUTO_INCREMENT,
   `adminname` varchar(16) NOT NULL,
@@ -37,7 +35,6 @@ INSERT INTO `admin` (`admin_id`, `adminname`, `admin_password`, `official_name`,
 /*!40000 ALTER TABLE `admin` ENABLE KEYS */;
 
 -- 导出  表 blogdb.blog 结构
-DROP TABLE IF EXISTS `blog`;
 CREATE TABLE IF NOT EXISTS `blog` (
   `blog_id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(50) DEFAULT NULL,
@@ -57,7 +54,6 @@ INSERT INTO `blog` (`blog_id`, `title`, `describe`, `text`, `public_time`, `user
 /*!40000 ALTER TABLE `blog` ENABLE KEYS */;
 
 -- 导出  表 blogdb.comments 结构
-DROP TABLE IF EXISTS `comments`;
 CREATE TABLE IF NOT EXISTS `comments` (
   `comment_id` varchar(16) NOT NULL,
   `cblog_id` int NOT NULL,
@@ -77,10 +73,9 @@ DELETE FROM `comments`;
 /*!40000 ALTER TABLE `comments` ENABLE KEYS */;
 
 -- 导出  表 blogdb.user 结构
-DROP TABLE IF EXISTS `user`;
 CREATE TABLE IF NOT EXISTS `user` (
   `user_id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(16) DEFAULT NULL,
+  `username` varchar(16) NOT NULL,
   `user_password` varchar(16) NOT NULL,
   `profile_photo` varchar(255) DEFAULT NULL,
   `gender` varchar(16) DEFAULT 'unkown',
@@ -93,7 +88,6 @@ DELETE FROM `user`;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
 INSERT INTO `user` (`user_id`, `username`, `user_password`, `profile_photo`, `gender`, `phone_number`) VALUES
 	(13, '1', '2', '4', '4', '3'),
-	(14, 'name', 'password', NULL, 'male', '12345687951'),
 	(15, 'name', 'password', '23', 'female', '12345678910');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 
