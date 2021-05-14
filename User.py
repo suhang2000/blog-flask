@@ -59,3 +59,65 @@ class User:
             result = False
         finally:
             return result
+
+    def select_user_with_conditions(self, data:dict):
+        strs = []
+        condition = ""
+        #print(data)
+        for k, v in data.items():
+            if v != '':
+                str = k + "=" + "'" + v + "'"
+                strs.append(str)
+        #print(strs)
+        for i in range(len(strs)):
+            if i != len(strs) - 1:
+                condition = condition + strs[i] + " and "
+            else:
+                condition = condition + strs[i]
+        #print("condition:", condition)
+        if condition != '':
+            select_user_conditionally_sql = "select * from user where " + condition + ";"
+            self.cursor.execute(select_user_conditionally_sql)
+        else:
+            select_sql = "select * from user;"
+            self.cursor.execute(select_sql)
+
+        result = self.cursor.fetchall()
+        print(result)
+        return result
+
+    def fix_user_information(self, data:dict):
+        u_id = data['user_id']
+        strs = []
+        set = ""
+        for k,v in data.items():
+            if v!='':
+                if k != 'user_id':
+                    str = k + "=" + "'" + v + "'"
+                    strs.append(str)
+        for i in range(len(strs)):
+            if i != len(strs)-1:
+                set = set + strs[i] + ", "
+            else:
+                set = set + strs[i]
+        try:
+            if set != "":
+                fix_user_sql = "update user set " + set + " where user_id=" + "'" + u_id + "';"
+                print(fix_user_sql)
+                result = self.cursor.execute(fix_user_sql)
+                self.conn.commit()
+                print("number changed: ", result)
+            else:
+                return 0
+            print('success')
+        except:
+            print('failed')
+            result = 0
+        finally:
+            return result
+
+
+
+
+
+
