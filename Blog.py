@@ -1,4 +1,5 @@
 from pymysql import connect
+from pymysql.converters import escape_string
 from pymysql.cursors import DictCursor
 
 from config import MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE
@@ -51,10 +52,10 @@ class Blog:
         keys = ''
         values = ''
         for k, v in data.items():
-            keys += k
+            keys += "`"+k+"`"
             keys += ','
             values += "'"
-            values += v
+            values += escape_string(v)
             values += "'"
             values += ','
         keys = keys[:-1]
@@ -77,7 +78,7 @@ class Blog:
     def update_blog(self, data: dict) -> bool:
         insert_user_sql = ''
         for key, value in data.items():
-            insert_user_sql = "UPDATE blog SET {}='{}' WHERE blog_id='{}';".format(key, value, data['blog_id'])
+            insert_user_sql = "UPDATE blog SET {}='{}' WHERE blog_id='{}';".format(key, escape_string(value), data['blog_id'])
             print(insert_user_sql)
             self.cursor.execute(insert_user_sql)
 
@@ -126,7 +127,7 @@ class Blog:
         for k,v in data.items():
             if v!='':
                 if k != 'blog_id':
-                    str = k + "=" + "'" + v + "'"
+                    str = "`"+k+"`" + "=" + "'" + escape_string(v) + "'"
                     strs.append(str)
         for i in range(len(strs)):
             if i != len(strs)-1:

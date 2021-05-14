@@ -5,8 +5,13 @@ from Blog import Blog
 from User import User
 from Admin import Admin
 from util import ResData
+from sensitiveDetection import GFW
 
 app = Flask(__name__)
+gfw = GFW()
+with open("sensitivewords.txt", "r") as f:
+    lines = f.read().splitlines()
+    gfw.set(lines)
 CORS(app, supports_credentials=True)
 
 """
@@ -205,6 +210,10 @@ def fixarticle():
     if request.args is not None:
         data = request.get_data()
         data = json.loads(data)
+        for k, v in data.items():
+            if(len(gfw.check(str(v)))>0):
+                resData = ResData(400, '', '文本中存在敏感词')
+                return jsonify(resData)
         uid = data['blog_id']
         u_id = str(uid)
         data['blog_id'] = u_id
@@ -214,11 +223,11 @@ def fixarticle():
         if len(result) == 1:
             result = blog.fix_blog_information(data)
             if result == 1:
-                resData = ResData(200, '', 'fix succeed')
+                resData = ResData(200, '', '修改成功')
             else:
-                resData = ResData(200, '', 'fix failed')
+                resData = ResData(400, '', '数据库侧出现错误')
         else:
-            resData = ResData(400, '', 'select failed')
+            resData = ResData(400, '', '数据库侧不存在该博客')
         return jsonify(resData)
 
 @app.route('/api/delete/article', methods=['POST'])
@@ -235,11 +244,11 @@ def deletearticle():
         if result == True:
             result = blog.delete_blog(data['blog_id'])
             if result == True:
-                resData = ResData(200, '', 'delete succeed')
+                resData = ResData(200, '', '删除成功')
             else:
-                resData = ResData(400, '', 'delete failed')
+                resData = ResData(400, '', '数据库侧出现错误')
         else:
-            resData = ResData(400, '', 'delete failed')
+            resData = ResData(400, '', '数据库侧不存在该博客')
         return jsonify(resData)
 
 if __name__ == '__main__':
