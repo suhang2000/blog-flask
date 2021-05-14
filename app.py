@@ -23,20 +23,18 @@ CORS(app, supports_credentials=True)
 
 @app.route('/api/login/user', methods=['GET'])
 def login():
-    userid = ''
-    password = ''
-    print('request args:', request.args)
+    username = ''
+    user_password = ''
     if request.args is not None:
         data = request.args.to_dict()
-        userid = data.get('user_id')
-        password = data.get('user_password')
+        username = data.get('username')
+        user_password = data.get('user_password')
     user = User()
-    result = user.select_user(userid, password)
-    # print(result)
+    result = user.select_user(username, user_password)
     if result:
-        resData = ResData(200, userid, 'login succeed')
+        resData = ResData(200, username, '登录成功')
     else:
-        resData = ResData(400, '', 'login failed')
+        resData = ResData(400, '', '登录失败')
     return jsonify(resData)
 
 
@@ -61,31 +59,39 @@ def admin_login():
 
 @app.route('/api/register/user', methods=['POST'])
 def register():
-    resData = ResData(400, '', 'register failed')
+
     data = request.get_data()
     if data is not None:
         data = json.loads(data)
         print('data: ', data)
         user = User()
-        result = user.insert_user(data)
-        if result:
-            resData = ResData(200, '', 'register succeed')
+        user_info = user.get_user_info_by_name(data.get('username'))
+        print(user_info)
+        if user_info:
+            resData = ResData(400, '', '用户已存在')
+        else:
+            result = user.insert_user(data)
+            if result:
+                resData = ResData(200, '', '注册成功')
     return jsonify(resData)
 
 
 @app.route('/api/resetpwd/user', methods=['POST'])
 def reset_user_pwd():
-    resData = ResData(400, '', 'register failed')
     data = request.get_data()
     if data is not None:
         data = json.loads(data)
         print('data: ', data)
-        del data['phone_number']
-        print(data)
         user = User()
-        result = user.update_user(data)
-        if result:
-            resData = ResData(200, '', 'register succeed')
+        if user.select_user(data.get('username'), data.get('password_now')):
+            user_info = user.get_user_info_by_name(data.get('username'), "user_id")
+            print(user_info['user_id'])
+            del data['password_now']
+            print(data)
+            result = user.update_user(data, user_info['user_id'])
+            resData = ResData(200, '', '密码修改成功')
+        else:
+            resData = ResData(400, '', '用户名或密码错误')
     return jsonify(resData)
 
 

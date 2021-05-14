@@ -20,10 +20,10 @@ class User:
         self.cursor.close()
         self.conn.close()
 
-    def select_user(self, userid, password):
+    def select_user(self, username, user_password):
         # print('select user')
         # mysql语句
-        select_user_sql = 'select * from user where username="%s" and user_password="%s";' % (userid, password)
+        select_user_sql = 'select * from user where username="%s" and user_password="%s";' % (username, user_password)
         # 执行mysql语句
         result = self.cursor.execute(select_user_sql)
         # 如果返回了一条数据，则登录成功，否则登录失败
@@ -31,7 +31,7 @@ class User:
             result = True
         else:
             result = False
-            print('there is no user where username="%s" and password="%s"!!' % (userid, password))
+            print('there is no user where username="%s" and password="%s"!!' % (username, user_password))
         return result
 
     def insert_user(self, data: dict) -> bool:
@@ -61,12 +61,11 @@ class User:
         finally:
             return result
 
-    def update_user(self, data: dict) -> bool:
-        insert_user_sql = ''
+    def update_user(self, data: dict, user_id) -> bool:
         for key, value in data.items():
-            insert_user_sql = "UPDATE user SET {}='{}' WHERE username='{}';".format(key, value, data['username'])
-            print(insert_user_sql)
-            self.cursor.execute(insert_user_sql)
+            update_user_sql = "UPDATE user SET {}='{}' WHERE user_id={};".format(key, value, user_id)
+            print(update_user_sql)
+            self.cursor.execute(update_user_sql)
 
         # 执行mysql语句，如果插入成功，则注册成功，否则注册失败
         try:
@@ -79,6 +78,11 @@ class User:
             result = False
         finally:
             return result
+
+    def get_user_info_by_name(self, username, word='*') -> dict:
+        get_user_info_sql = "SELECT {} from user WHERE username='{}'".format(word, username)
+        self.cursor.execute(get_user_info_sql)
+        return self.cursor.fetchone()
 
     def select_user_with_conditions(self, data: dict):
         strs = []
