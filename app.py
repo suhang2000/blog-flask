@@ -4,6 +4,8 @@ import json
 from Blog import Blog
 from User import User
 from Admin import Admin
+from util import ResData
+
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
@@ -32,17 +34,9 @@ def login():
     result = user.select_user(userid, password)
     # print(result)
     if result:
-        resData = {
-            "code": 200,
-            "data": userid,
-            "message": 'login succeed'
-        }
+        resData = ResData(200, userid, 'login succeed')
     else:
-        resData = {
-            "code": 400,
-            "data": '',
-            "message": 'login failed'
-        }
+        resData = ResData(400, '', 'login failed')
     return jsonify(resData)
 
 @app.route('/api/login/admin', methods=['GET'])
@@ -73,6 +67,20 @@ def admin_login():
 
 @app.route('/api/register/user', methods=['POST'])
 def register():
+    resData = ResData(400, '', 'register failed')
+    data = request.get_data()
+    if data is not None:
+        data = json.loads(data)
+        print('data: ', data)
+        user = User()
+        result = user.insert_user(data)
+        if result:
+            resData = ResData(200, '', 'register succeed')
+    return jsonify(resData)
+
+
+@app.route('/api/resetpwd/user', methods=['POST'])
+def reset_user_pwd():
     resData = {
         "code": 400,
         "data": '',
@@ -82,14 +90,12 @@ def register():
     if data is not None:
         data = json.loads(data)
         print('data: ', data)
+        del data['phone_number']
+        print(data)
         user = User()
-        result = user.insert_user(data)
+        result = user.update_user(data)
         if result:
-            resData = {
-                "code": 200,
-                "data": '',
-                "message": 'register succeed'
-            }
+            resData = ResData(200, '', 'register succeed')
     return jsonify(resData)
 
 @app.route('/api/select/user', methods=['POST'])

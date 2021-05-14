@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `admin` (
   `official_name` varchar(255) DEFAULT NULL,
   `phone_number` varchar(16) DEFAULT NULL,
   PRIMARY KEY (`admin_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 正在导出表  blogdb.admin 的数据：~2 rows (大约)
 DELETE FROM `admin`;
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `blog` (
   `public_time` varchar(20) DEFAULT NULL,
   `user_id` int DEFAULT NULL,
   PRIMARY KEY (`blog_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 正在导出表  blogdb.blog 的数据：~2 rows (大约)
 DELETE FROM `blog`;
@@ -74,30 +74,27 @@ CREATE TABLE IF NOT EXISTS `comments` (
 -- 正在导出表  blogdb.comments 的数据：~2 rows (大约)
 DELETE FROM `comments`;
 /*!40000 ALTER TABLE `comments` DISABLE KEYS */;
-INSERT INTO `comments` (`comment_id`, `cblog_id`, `cuser_id`, `content`, `comment_time`) VALUES
-	('1', 1, 10001, 'what a good article too!', '2021-04-01 13:36:45'),
-	('2', 2, 10002, 'what a good article!', '2021-01-09 07:25:08');
 /*!40000 ALTER TABLE `comments` ENABLE KEYS */;
 
 -- 导出  表 blogdb.user 结构
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE IF NOT EXISTS `user` (
   `user_id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(16) NOT NULL,
+  `username` varchar(16) DEFAULT NULL,
   `user_password` varchar(16) NOT NULL,
   `profile_photo` varchar(255) DEFAULT NULL,
-  `gender` char(1) DEFAULT NULL,
-  `phone_number` varchar(16) DEFAULT NULL,
-  PRIMARY KEY (`user_id`),
-  CONSTRAINT `user_chk_1` CHECK ((`gender` in (_utf8mb3'F',_utf8mb3'M')))
-) ENGINE=InnoDB AUTO_INCREMENT=10003 DEFAULT CHARSET=utf8;
+  `gender` varchar(16) DEFAULT 'unkown',
+  `phone_number` varchar(16) DEFAULT 'unkown',
+  PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 
 -- 正在导出表  blogdb.user 的数据：~2 rows (大约)
 DELETE FROM `user`;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
 INSERT INTO `user` (`user_id`, `username`, `user_password`, `profile_photo`, `gender`, `phone_number`) VALUES
-	(10001, 'testuser01', '123456', NULL, 'F', '13800138001'),
-	(10002, 'testuser02', '123456', NULL, 'M', '13800138002');
+	(13, '1', '2', '4', '4', '3'),
+	(14, 'name', 'password', NULL, 'male', '12345687951'),
+	(15, 'name', 'password', '23', 'female', '12345678910');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
