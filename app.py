@@ -182,9 +182,9 @@ def selectarticlebypage():
     page = int(datas['page']) - 1
     blog = Blog()
     result = blog.select_blog_with_conditions(data)
-    total = int(len(result) / pagesize) + 1
+    total = int(len(result))#int(len(result) / pagesize) + 1
     tempresult = []
-    print(result)
+    #print(result)
     if page * pagesize > len(result):
         result = ''
     else:
@@ -200,10 +200,27 @@ def selectarticlebypage():
             i = i + 1
         result = tempresult
     result.append({'total': total})
-    print(result)
+    #print(result)
     resData = ResData(200, result, 'select succeed')
     return jsonify(resData)
 
+@app.route('/api/add/article', methods=['POST'])
+def addarticle():
+    if request.args is not None:
+        data = request.get_data()
+        data = json.loads(data)
+        for k, v in data.items():
+            if(len(gfw.check(str(v)))>0):
+                resData = ResData(400, '', '文本中存在敏感词')
+                return jsonify(resData)
+        blog = Blog()
+        #print(data)
+        result = blog.insert_blog(data)
+        if result == 1:
+            resData = ResData(200, '', '添加成功')
+        else:
+            resData = ResData(400, '', '数据库侧出现错误')
+        return jsonify(resData)
 
 @app.route('/api/fix/article', methods=['POST'])
 def fixarticle():
@@ -219,7 +236,7 @@ def fixarticle():
         data['blog_id'] = u_id
         blog = Blog()
         result = blog.select_blog_with_conditions({'blog_id': data['blog_id']})
-        print(data)
+        #print(data)
         if len(result) == 1:
             result = blog.fix_blog_information(data)
             if result == 1:

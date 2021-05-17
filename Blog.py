@@ -13,8 +13,8 @@ class Blog:
             user=MYSQL_USER,
             password=MYSQL_PASSWORD,
             database=MYSQL_DATABASE,
+            max_allowed_packet=256*((2**10)**2) #256MB
         )
-
         self.cursor = self.conn.cursor(DictCursor)
 
     def __del__(self):
@@ -55,7 +55,7 @@ class Blog:
             keys += "`"+k+"`"
             keys += ','
             values += "'"
-            values += escape_string(v)
+            values += escape_string(str(v))
             values += "'"
             values += ','
         keys = keys[:-1]
@@ -68,8 +68,8 @@ class Blog:
             self.conn.commit()
             print('success')
             result = True
-        except:
-            print('failed')
+        except Exception as e:
+            print('failed, ', e)
             self.conn.rollback()
             result = False
         finally:
@@ -97,27 +97,42 @@ class Blog:
     def select_blog_with_conditions(self, data:dict):
         strs = []
         condition = ""
-        #print(data)
+        isMultiCondWithHardcond = False
+
+        if not 'hardcond' in data.keys():
+            data['hardcond']=''
         for k, v in data.items():
-            if v != '':
-                str = k + "=" + "'" + v + "'"
+            if (v != '') and (k !='op') and (k !='hardcond'):
+                if(k == 'blog_id' or (k == data['hardcond'])):
+                    str = "`"+k+"`" + "=" + "'" + v + "'"
+                else:
+                    str = "`"+k+"`" + " like " + "'%" + v + "%'"
                 strs.append(str)
-        #print(strs)
+
+        for i in range(len(strs)):
+            if strs[i].startswith("`"+data['hardcond']+"`") and len(strs)>1:
+                isMultiCondWithHardcond = True
+                del strs[i]
+
         for i in range(len(strs)):
             if i != len(strs) - 1:
-                condition = condition + strs[i] + " and "
+                condition = condition + strs[i] + " "+data['op']+" "
             else:
                 condition = condition + strs[i]
-        #print("condition:", condition)
+
         if condition != '':
-            select_user_conditionally_sql = "select * from blog where " + condition + ";"
+            select_user_conditionally_sql = "select * from blog natural join user where " + condition + ";"
+            if(isMultiCondWithHardcond):
+                select_user_conditionally_sql = "select * from ("+select_user_conditionally_sql[:-1]+") cq where `"+data['hardcond']+"`" + "=" + "'" + data[data['hardcond']] + "';"
+            print(select_user_conditionally_sql)
             self.cursor.execute(select_user_conditionally_sql)
         else:
-            select_sql = "select * from blog;"
-            self.cursor.execute(select_sql)
+            select_user_conditionally_sql = "select * from blog natural join user;"
+            print(select_user_conditionally_sql)
+            self.cursor.execute(select_user_conditionally_sql)
 
         result = self.cursor.fetchall()
-        print(result)
+        #print(result)
         return result
 
     def fix_blog_information(self, data:dict):
