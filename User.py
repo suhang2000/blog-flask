@@ -139,3 +139,83 @@ class User:
             result = 0
         finally:
             return result
+    def select_user_byname(self, username):
+        # print('select user')
+        # mysql语句
+        select_user_sql = 'select * from user where username="%s" ;' % username
+        # 执行mysql语句
+        result = self.cursor.execute(select_user_sql)
+        # 如果返回了一条数据，则说明已经存在该昵称
+        if 1 == result:
+            result = True
+        else:
+            result = False
+        return result
+
+    def changename_byname(self, newname, username):
+        # print('select user')
+        # mysql语句
+        update_user_sql = 'update user set username = ' + "%s " + ' WHERE username = %s ;'
+        # 执行mysql语句
+        result = self.cursor.execute(update_user_sql, (newname, username))
+        self.conn.commit()
+        if 1 == result:
+            result = True
+        else:
+            result = False
+        return result
+
+    def changegender_byname(self, newgender, username):
+        # print('select user')
+        # mysql语句
+        update_user_sql = 'update user set gender = ' + "%s " + ' WHERE username = %s ;'
+        # 执行mysql语句
+        result = self.cursor.execute(update_user_sql, (newgender, username))
+        self.conn.commit()
+        if 1 == result:
+            result = True
+        else:
+            result = False
+        return result
+
+    def changenum_byname(self, newnum, username):
+        # print('select user')
+        # mysql语句
+        update_user_sql = 'update user set phone_number = ' + "%s " + ' WHERE username = %s ;'
+        # 执行mysql语句
+        result = self.cursor.execute(update_user_sql, (newnum, username))
+        print(result)
+        self.conn.commit()
+        if 1 == result:
+            result = True
+        else:
+            result = False
+        return result
+
+    def changepsd_byname(self, newpsd, username):
+        # print('select user')
+        # mysql语句
+        update_user_sql = 'update user set user_password = ' + "%s " + ' WHERE username = %s ;'
+        # 执行mysql语句
+        result = self.cursor.execute(update_user_sql, (newpsd, username))
+        print(result)
+        self.conn.commit()
+        if 1 == result:
+            result = True
+        else:
+            result = False
+        return result
+
+    def changephoto_byname(self, newphoto, username):
+        # print('select user')
+        # mysql语句
+        update_user_sql = 'update user set profile_photo = ' + "%s " + ' WHERE username = %s ;'
+        # 执行mysql语句
+        result = self.cursor.execute(update_user_sql, (newphoto, username))
+        print(result)
+        self.conn.commit()
+        if 1 == result:
+            result = True
+        else:
+            result = False
+        return result

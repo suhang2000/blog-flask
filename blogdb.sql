@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `blog` (
   `blog_id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(50) DEFAULT NULL,
   `describe` varchar(300) DEFAULT NULL,
-  `text` varchar(10000) DEFAULT NULL,
+  `text` LONGTEXT DEFAULT NULL,
   `public_time` varchar(20) DEFAULT NULL,
   `user_id` int DEFAULT NULL,
   PRIMARY KEY (`blog_id`)
@@ -49,8 +49,8 @@ CREATE TABLE IF NOT EXISTS `blog` (
 DELETE FROM `blog`;
 /*!40000 ALTER TABLE `blog` DISABLE KEYS */;
 INSERT INTO `blog` (`blog_id`, `title`, `describe`, `text`, `public_time`, `user_id`) VALUES
-	(1, 'This is not a test title', 'This is not a test description.', 'This is not a test text.', '2021-03-05 13:52:18', 10002),
-	(2, 'This is a test title', 'This is a test description.', 'This is a test text.', '2021-01-01 23:54:29', 10001);
+	(1, 'This is not a test title', 'This is not a test description.', 'This is not a test text.', '2021-03-05 13:52:18', 13),
+	(2, 'This is a test title', 'This is a test description.', 'This is a test text.', '2021-01-01 23:54:29', 15);
 /*!40000 ALTER TABLE `blog` ENABLE KEYS */;
 
 -- 导出  表 blogdb.comments 结构
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `comments` (
   `comment_id` varchar(16) NOT NULL,
   `cblog_id` int NOT NULL,
   `cuser_id` int DEFAULT NULL,
-  `content` varchar(200) DEFAULT NULL,
+  `content` LONGTEXT DEFAULT NULL,
   `comment_time` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`comment_id`),
   KEY `blog_id` (`cblog_id`),

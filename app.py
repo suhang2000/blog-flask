@@ -9,9 +9,9 @@ from sensitiveDetection import GFW
 
 app = Flask(__name__)
 gfw = GFW()
-with open("sensitivewords.txt", "r") as f:
-    lines = f.read().splitlines()
-    gfw.set(lines)
+# with open("sensitivewords.txt", "r") as f:
+#     lines = f.read().splitlines()
+#     gfw.set(lines)
 CORS(app, supports_credentials=True)
 
 """
@@ -64,7 +64,6 @@ def admin_login():
 
 @app.route('/api/register/user', methods=['POST'])
 def register():
-
     data = request.get_data()
     if data is not None:
         data = json.loads(data)
@@ -182,9 +181,9 @@ def selectarticlebypage():
     page = int(datas['page']) - 1
     blog = Blog()
     result = blog.select_blog_with_conditions(data)
-    total = int(len(result) / pagesize) + 1
+    total = int(len(result))#int(len(result) / pagesize) + 1
     tempresult = []
-    print(result)
+    #print(result)
     if page * pagesize > len(result):
         result = ''
     else:
@@ -200,13 +199,12 @@ def selectarticlebypage():
             i = i + 1
         result = tempresult
     result.append({'total': total})
-    print(result)
+    #print(result)
     resData = ResData(200, result, 'select succeed')
     return jsonify(resData)
 
-
-@app.route('/api/fix/article', methods=['POST'])
-def fixarticle():
+@app.route('/api/add/article', methods=['POST'])
+def addarticle():
     if request.args is not None:
         data = request.get_data()
         data = json.loads(data)
@@ -214,12 +212,30 @@ def fixarticle():
             if(len(gfw.check(str(v)))>0):
                 resData = ResData(400, '', '文本中存在敏感词')
                 return jsonify(resData)
+        blog = Blog()
+        #print(data)
+        result = blog.insert_blog(data)
+        if result == 1:
+            resData = ResData(200, '', '添加成功')
+        else:
+            resData = ResData(400, '', '数据库侧出现错误')
+        return jsonify(resData)
+
+@app.route('/api/fix/article', methods=['POST'])
+def fixarticle():
+    if request.args is not None:
+        data = request.get_data()
+        data = json.loads(data)
+        for k, v in data.items():
+            if (len(gfw.check(str(v))) > 0):
+                resData = ResData(400, '', '文本中存在敏感词')
+                return jsonify(resData)
         uid = data['blog_id']
         u_id = str(uid)
         data['blog_id'] = u_id
         blog = Blog()
         result = blog.select_blog_with_conditions({'blog_id': data['blog_id']})
-        print(data)
+        #print(data)
         if len(result) == 1:
             result = blog.fix_blog_information(data)
             if result == 1:
@@ -229,6 +245,7 @@ def fixarticle():
         else:
             resData = ResData(400, '', '数据库侧不存在该博客')
         return jsonify(resData)
+
 
 @app.route('/api/delete/article', methods=['POST'])
 def deletearticle():
@@ -250,6 +267,162 @@ def deletearticle():
         else:
             resData = ResData(400, '', '数据库侧不存在该博客')
         return jsonify(resData)
+
+
+@app.route('/api/userInfo_select', methods=['GET'])
+def select_byname():
+    uname = ''
+    print('request args:', request.args)
+    if request.args is not None:
+        data = request.args.to_dict()
+        uname = data.get('username')
+    user = User()
+    user = user.select_byname(uname)
+    resdata = {
+        "code": 200,
+        "data": user,
+        "message": 'success'
+    }
+    return jsonify(resdata)
+
+
+@app.route('/api/changeusername', methods=['GET'])
+def select_user_byname():
+    newname = ''
+    uname = ''
+    print('request args:', request.args)
+    if request.args is not None:
+        data = request.args.to_dict()
+        newname = data.get('value')
+        uname = data.get('username')
+    user = User()
+    result = user.select_user_byname(newname)
+    if result == True:
+        resdata = ResData(400, '', '已存在该昵称')
+    else:
+        result1 = user.changename_byname(newname, uname)
+        if result1 == True:
+            resdata = {
+                "code": 200,
+                "data": '',
+                "message": '请用新的用户名登陆'
+            }
+        else:
+            print(998)
+    return jsonify(resdata)
+
+
+@app.route('/api/changegender', methods=['GET'])
+def changegender():
+    newgender = ''
+    uname = ''
+    print('request args:', request.args)
+    if request.args is not None:
+        data = request.args.to_dict()
+        newgender = data.get('value')
+        uname = data.get('username')
+    user = User()
+    result = user.changegender_byname(newgender, uname)
+
+    if result == True:
+        user = user.select_byname(uname)
+        resdata = {
+            "code": 200,
+            "data": user,
+            "message": '修改成功'
+        }
+    else:
+        resdata = {
+            "code": 400,
+            "data": '',
+            "message": '请输入"F" 或 "M" '
+        }
+    return jsonify(resdata)
+
+
+@app.route('/api/changenum', methods=['GET'])
+def changenum():
+    newnum = ''
+    uname = ''
+    print('request args:', request.args)
+    if request.args is not None:
+        data = request.args.to_dict()
+        newnum = data.get('value')
+        uname = data.get('username')
+    user = User()
+    result = user.changenum_byname(newnum, uname)
+
+    if result == True:
+        user = user.select_byname(uname)
+        resdata = {
+            "code": 200,
+            "data": user,
+            "message": '修改成功'
+        }
+    else:
+        resdata = {
+            "code": 400,
+            "data": '',
+            "message": '请输入正确的11位的电话号码 '
+        }
+    return jsonify(resdata)
+
+
+@app.route('/api/changepsd', methods=['GET'])
+def changepsd():
+    newpsd = ''
+    uname = ''
+    print('request args:', request.args)
+    if request.args is not None:
+        data = request.args.to_dict()
+        newpsd = data.get('value')
+        uname = data.get('username')
+    user = User()
+    result = user.changepsd_byname(newpsd, uname)
+
+    if result == True:
+        resdata = {
+            "code": 200,
+            "data": '',
+            "message": '请用新的密码登陆'
+        }
+    else:
+        resdata = {
+            "code": 400,
+            "data": '',
+            "message": '请输入正确的11位的电话号码 '
+        }
+    return jsonify(resdata)
+
+
+@app.route('/api/changephoto', methods=['GET'])
+def changephoto():
+    newphoto = ''
+    uname = ''
+    print('request args:', request.args)
+    if request.args is not None:
+        data = request.args.to_dict()
+        newphoto = data.get('photo')
+        print(newphoto)
+        uname = data.get('username')
+    user = User()
+    result = user.changephoto_byname(newphoto, uname)
+
+    if result == True:
+        user = user.select_byname(uname)
+        resdata = {
+            "code": 200,
+            "data": user,
+            "message": '更换成功'
+        }
+    else:
+        resdata = {
+            "code": 400,
+            "data": '',
+            "message": '请输入正确的11位的电话号码 '
+        }
+    return jsonify(resdata)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
