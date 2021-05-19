@@ -8,10 +8,12 @@ from util import ResData
 from sensitiveDetection import GFW
 
 app = Flask(__name__)
+import os
+print(os.getcwd())
 gfw = GFW()
-# with open("sensitivewords.txt", "r") as f:
-#     lines = f.read().splitlines()
-#     gfw.set(lines)
+with open(r'D:\Blog\blog-flask\sensitivewords.txt', "r") as f:
+    lines = f.read().splitlines()
+    gfw.set(lines)
 CORS(app, supports_credentials=True)
 
 """
@@ -40,6 +42,7 @@ def login():
         resData = ResData(200, username, '登录成功')
     else:
         resData = ResData(400, '', '登录失败')
+    print(result)
     return jsonify(resData)
 
 
