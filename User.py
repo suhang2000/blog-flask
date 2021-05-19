@@ -139,6 +139,15 @@ class User:
             result = 0
         finally:
             return result
+
+    def select_byname(self, uname):
+        sql = 'select * from user where username = "%s";' % uname
+        print(sql)
+        self.cursor.execute(sql)
+        result = self.cursor.fetchall()
+        print(result)
+        return result
+
     def select_user_byname(self, username):
         # print('select user')
         # mysql语句
