@@ -8,10 +8,9 @@ from util import ResData
 from sensitiveDetection import GFW
 
 app = Flask(__name__)
-import os
-print(os.getcwd())
 gfw = GFW()
-with open(r'D:\Blog\blog-flask\sensitivewords.txt', "r") as f:
+import os
+with open(os.path.join(os.path.dirname(__file__), 'sensitivewords.txt'), "r") as f:
     lines = f.read().splitlines()
     gfw.set(lines)
 CORS(app, supports_credentials=True)
