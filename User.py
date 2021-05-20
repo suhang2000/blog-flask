@@ -200,3 +200,31 @@ class User:
         else:
             result = False
         return result
+
+    def changepsd_byname(self, newpsd, username):
+        # print('select user')
+        # mysql语句
+        update_user_sql = 'update user set user_password = ' + "%s " + ' WHERE username = %s ;'
+        # 执行mysql语句
+        result = self.cursor.execute(update_user_sql, (newpsd, username))
+        print(result)
+        self.conn.commit()
+        if 1 == result:
+            result = True
+        else:
+            result = False
+        return result
+
+    def changephoto_byname(self, newphoto, username):
+        # print('select user')
+        # mysql语句
+        update_user_sql = 'update user set profile_photo = ' + "%s " + ' WHERE username = %s ;'
+        # 执行mysql语句
+        result = self.cursor.execute(update_user_sql, (newphoto, username))
+        print(result)
+        self.conn.commit()
+        if 1 == result:
+            result = True
+        else:
+            result = False
+        return result
