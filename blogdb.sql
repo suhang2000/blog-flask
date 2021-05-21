@@ -55,7 +55,7 @@ INSERT INTO `blog` (`blog_id`, `title`, `describe`, `text`, `public_time`, `user
 
 -- 导出  表 blogdb.comments 结构
 CREATE TABLE IF NOT EXISTS `comments` (
-  `comment_id` varchar(16) NOT NULL,
+  `comment_id` int NOT NULL AUTO_INCREMENT,
   `cblog_id` int NOT NULL,
   `cuser_id` int DEFAULT NULL,
   `content` LONGTEXT DEFAULT NULL,
