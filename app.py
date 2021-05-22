@@ -1,3 +1,4 @@
+from Comments import Comments
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import json
@@ -424,6 +425,82 @@ def changephoto():
         }
     return jsonify(resdata)
 
+
+@app.route('/api/select/comments/page', methods=['POST'])
+def selectcommentsbypage():
+    pagesize = 2
+    datas = request.get_data()
+    datas = json.loads(datas)
+    data = {}
+    for k, v in datas.items():
+        if k != 'page':
+            data[k] = v
+    print(data)
+    page = int(datas['page']) - 1
+    comments = Comments()
+    result = comments.select_comment_with_conditions(data)
+    total = int(len(result))#int(len(result) / pagesize) + 1
+    tempresult = []
+    #print(result)
+    if page * pagesize > len(result):
+        result = ''
+    else:
+        pageend = 0
+        if (page + 1) * pagesize > len(result):
+            pageend = len(result)
+        else:
+            pageend = (page + 1) * pagesize
+        i = page * pagesize
+        j = 0
+        while i < pageend:
+            tempresult.append(result[i])
+            i = i + 1
+        result = tempresult
+    result.append({'total': total})
+    #print(result)
+    resData = ResData(200, result, 'select succeed')
+    return jsonify(resData)
+
+
+@app.route('/api/add/comment', methods=['POST'])
+def addcomment():
+    if request.args is not None:
+        data = request.get_data()
+        data = json.loads(data)
+        for k, v in data.items():
+            if(len(gfw.check(str(v)))>0):
+                resData = ResData(400, '', '文本中存在敏感词')
+                return jsonify(resData)
+        comments = Comments()
+        #print(data)
+        result = comments.insert_comment(data)
+        if result == 1:
+            resData = ResData(200, '', '评论成功')
+        else:
+            resData = ResData(400, '', '数据库侧出现错误')
+        return jsonify(resData)
+
+
+@app.route('/api/delete/comment', methods=['POST'])
+def deletecomment():
+    if request.args is not None:
+        data = request.get_data()
+        data = json.loads(data)
+        uid = data['comment_id']
+        u_id = str(uid)
+        data['comment_id'] = u_id
+        comments = Comments()
+        result = comments.select_comment(data['comment_id'])
+        print(data)
+        if result == True:
+            result = comments.delete_comment(data['comment_id'])
+            if result == True:
+                resData = ResData(200, '', '删除成功')
+            else:
+                resData = ResData(400, '', '数据库侧出现错误')
+        else:
+            resData = ResData(400, '', '数据库侧不存在该评论')
+        return jsonify(resData)
 
 if __name__ == '__main__':
     app.run(debug=True)

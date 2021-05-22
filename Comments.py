@@ -85,10 +85,10 @@ class Comments:
         for k, v in data.items():
             if (v != '') and (k !='op') and (k !='hardcond'):
                 if(k == 'comment_id' or (k == data['hardcond'])):
-                    str = "`"+k+"`" + "=" + "'" + v + "'"
+                    thestr = "`"+k+"`" + "=" + "'" + str(v) + "'"
                 else:
-                    str = "`"+k+"`" + " like " + "'%" + v + "%'"
-                strs.append(str)
+                    thestr = "`"+k+"`" + " like " + "'%" + str(v) + "%'"
+                strs.append(thestr)
 
         for i in range(len(strs)):
             if strs[i].startswith("`"+data['hardcond']+"`") and len(strs)>1:
@@ -104,11 +104,11 @@ class Comments:
         if condition != '':
             select_user_conditionally_sql = "select * from user join comments on `user_id`=`cuser_id` where " + condition + ";"
             if(isMultiCondWithHardcond):
-                select_user_conditionally_sql = "select * from ("+select_user_conditionally_sql[:-1]+") cq where `"+data['hardcond']+"`" + "=" + "'" + data[data['hardcond']] + "';"
+                select_user_conditionally_sql = "select * from ("+select_user_conditionally_sql[:-1]+") cq where `"+data['hardcond']+"`" + "=" + "'" + data[data['hardcond']] + "' order by comment_id;"
             print(select_user_conditionally_sql)
             self.cursor.execute(select_user_conditionally_sql)
         else:
-            select_user_conditionally_sql = "select * from user join comments on `user_id`=`cuser_id`;"
+            select_user_conditionally_sql = "select * from user join comments on `user_id`=`cuser_id` order by comment_id;"
             print(select_user_conditionally_sql)
             self.cursor.execute(select_user_conditionally_sql)
 

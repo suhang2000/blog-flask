@@ -104,10 +104,10 @@ class Blog:
         for k, v in data.items():
             if (v != '') and (k !='op') and (k !='hardcond'):
                 if(k == 'blog_id' or (k == data['hardcond'])):
-                    str = "`"+k+"`" + "=" + "'" + v + "'"
+                    thestr = "`"+k+"`" + "=" + "'" + str(v) + "'"
                 else:
-                    str = "`"+k+"`" + " like " + "'%" + v + "%'"
-                strs.append(str)
+                    thestr = "`"+k+"`" + " like " + "'%" + str(v) + "%'"
+                strs.append(thestr)
 
         for i in range(len(strs)):
             if strs[i].startswith("`"+data['hardcond']+"`") and len(strs)>1:
@@ -123,11 +123,11 @@ class Blog:
         if condition != '':
             select_user_conditionally_sql = "select *,COUNT(comment_id) as commentCnt from blog natural join user left join comments on `blog_id`=`cblog_id` where " + condition + " group by blog_id;"
             if(isMultiCondWithHardcond):
-                select_user_conditionally_sql = "select * from ("+select_user_conditionally_sql[:-1]+") cq where `"+data['hardcond']+"`" + "=" + "'" + data[data['hardcond']] + "';"
+                select_user_conditionally_sql = "select * from ("+select_user_conditionally_sql[:-1]+") cq where `"+data['hardcond']+"`" + "=" + "'" + data[data['hardcond']] + "' order by blog_id;"
             print(select_user_conditionally_sql)
             self.cursor.execute(select_user_conditionally_sql)
         else:
-            select_user_conditionally_sql = "select *,COUNT(comment_id) as commentCnt from blog natural join user left join comments on `blog_id`=`cblog_id` group by blog_id;"
+            select_user_conditionally_sql = "select *,COUNT(comment_id) as commentCnt from blog natural join user left join comments on `blog_id`=`cblog_id` group by blog_id order by blog_id;"
             print(select_user_conditionally_sql)
             self.cursor.execute(select_user_conditionally_sql)
 
@@ -142,8 +142,8 @@ class Blog:
         for k,v in data.items():
             if v!='':
                 if k != 'blog_id':
-                    str = "`"+k+"`" + "=" + "'" + escape_string(v) + "'"
-                    strs.append(str)
+                    thestr = "`"+k+"`" + "=" + "'" + escape_string(str(v)) + "'"
+                    strs.append(thestr)
         for i in range(len(strs)):
             if i != len(strs)-1:
                 set = set + strs[i] + ", "
