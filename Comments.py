@@ -5,7 +5,7 @@ from pymysql.cursors import DictCursor
 from config import MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE
 
 
-class Blog:
+class Comments:
     def __init__(self):
         self.conn = connect(
             host=MYSQL_HOST,
@@ -21,8 +21,8 @@ class Blog:
         self.cursor.close()
         self.conn.close()
 
-    def delete_blog(self, blogid):
-        select_user_sql = 'delete from blog where blog_id="%s";' % (blogid)
+    def delete_comment(self, commentid):
+        select_user_sql = 'delete from comments where comment_id="%s";' % (commentid)
         # 执行mysql语句
         try:
             result = self.cursor.execute(select_user_sql)
@@ -30,14 +30,14 @@ class Blog:
             result = True
         except:
             result = False
-            print('there is no blog where blog_id="%s"!!' % (blogid))
+            print('there is no comments where comment_id="%s"!!' % (commentid))
         return result
         # 如果返回了一条数据，则删除成功，否则删除失败
 
-    def select_blog(self, blogid):
+    def select_comment(self, commentid):
         # print('select user')
         # mysql语句
-        select_user_sql = 'select * from blog where blog_id="%s";' % (blogid)
+        select_user_sql = 'select * from comments where comment_id="%s";' % (commentid)
         # 执行mysql语句
         result = self.cursor.execute(select_user_sql)
         # 如果返回了一条数据，则登录成功，否则登录失败
@@ -45,10 +45,10 @@ class Blog:
             result = True
         else:
             result = False
-            print('there is no blog where blog_id="%s"!!' % (blogid))
+            print('there is no comments where comment_id="%s"!!' % (commentid))
         return result
 
-    def insert_blog(self, data: dict) -> bool:
+    def insert_comment(self, data: dict) -> bool:
         keys = ''
         values = ''
         for k, v in data.items():
@@ -60,7 +60,7 @@ class Blog:
             values += ','
         keys = keys[:-1]
         values = values[:-1]
-        insert_user_sql = "INSERT INTO blog({}) values({});".format(keys, values)
+        insert_user_sql = "INSERT INTO comments({}) values({});".format(keys, values)
         print(insert_user_sql)
         # 执行mysql语句，如果插入成功，则注册成功，否则注册失败
         try:
@@ -75,26 +75,7 @@ class Blog:
         finally:
             return result
 
-    def update_blog(self, data: dict) -> bool:
-        insert_user_sql = ''
-        for key, value in data.items():
-            insert_user_sql = "UPDATE blog SET {}='{}' WHERE blog_id='{}';".format(key, escape_string(value), data['blog_id'])
-            print(insert_user_sql)
-            self.cursor.execute(insert_user_sql)
-
-        # 执行mysql语句，如果插入成功，则注册成功，否则注册失败
-        try:
-            self.conn.commit()
-            print('success')
-            result = True
-        except:
-            print('failed')
-            self.conn.rollback()
-            result = False
-        finally:
-            return result
-
-    def select_blog_with_conditions(self, data:dict):
+    def select_comment_with_conditions(self, data:dict):
         strs = []
         condition = ""
         isMultiCondWithHardcond = False
@@ -103,7 +84,7 @@ class Blog:
             data['hardcond']=''
         for k, v in data.items():
             if (v != '') and (k !='op') and (k !='hardcond'):
-                if(k == 'blog_id' or (k == data['hardcond'])):
+                if(k == 'comment_id' or (k == data['hardcond'])):
                     thestr = "`"+k+"`" + "=" + "'" + str(v) + "'"
                 else:
                     thestr = "`"+k+"`" + " like " + "'%" + str(v) + "%'"
@@ -121,47 +102,16 @@ class Blog:
                 condition = condition + strs[i]
 
         if condition != '':
-            select_user_conditionally_sql = "select *,COUNT(comment_id) as commentCnt from blog natural join user left join comments on `blog_id`=`cblog_id` where " + condition + " group by blog_id;"
+            select_user_conditionally_sql = "select * from user join comments on `user_id`=`cuser_id` where " + condition + ";"
             if(isMultiCondWithHardcond):
-                select_user_conditionally_sql = "select * from ("+select_user_conditionally_sql[:-1]+") cq where `"+data['hardcond']+"`" + "=" + "'" + data[data['hardcond']] + "' order by blog_id;"
+                select_user_conditionally_sql = "select * from ("+select_user_conditionally_sql[:-1]+") cq where `"+data['hardcond']+"`" + "=" + "'" + data[data['hardcond']] + "' order by comment_id;"
             print(select_user_conditionally_sql)
             self.cursor.execute(select_user_conditionally_sql)
         else:
-            select_user_conditionally_sql = "select *,COUNT(comment_id) as commentCnt from blog natural join user left join comments on `blog_id`=`cblog_id` group by blog_id order by blog_id;"
+            select_user_conditionally_sql = "select * from user join comments on `user_id`=`cuser_id` order by comment_id;"
             print(select_user_conditionally_sql)
             self.cursor.execute(select_user_conditionally_sql)
 
         result = self.cursor.fetchall()
         #print(result)
         return result
-
-    def fix_blog_information(self, data:dict):
-        u_id = data['blog_id']
-        strs = []
-        set = ""
-        for k,v in data.items():
-            if v!='':
-                if k != 'blog_id':
-                    thestr = "`"+k+"`" + "=" + "'" + escape_string(str(v)) + "'"
-                    strs.append(thestr)
-        for i in range(len(strs)):
-            if i != len(strs)-1:
-                set = set + strs[i] + ", "
-            else:
-                set = set + strs[i]
-        try:
-            if set != "":
-                fix_user_sql = "update blog set " + set + " where blog_id=" + "'" + u_id + "';"
-                print(fix_user_sql)
-                result = self.cursor.execute(fix_user_sql)
-                self.conn.commit()
-                print("number changed: ", result)
-            else:
-                return 0
-            print('success')
-        except:
-            print('failed')
-            result = 0
-        finally:
-            return result
-
