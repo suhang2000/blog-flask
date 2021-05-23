@@ -228,3 +228,15 @@ class User:
         else:
             result = False
         return result
+
+    def delete_user_with_id(self, user_id):
+        delete_sql = 'delete from user where user_id=' + "'" + user_id + "'" + ';'
+        print(delete_sql)
+        result = self.cursor.execute(delete_sql)
+        try:
+            self.conn.commit()
+        except:
+            print('delete failed!')
+            result = 0
+        finally:
+            return result

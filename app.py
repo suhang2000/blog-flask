@@ -4,6 +4,7 @@ import json
 from Blog import Blog
 from User import User
 from Admin import Admin
+from Report import Report
 from util import ResData
 from sensitiveDetection import GFW
 
@@ -11,7 +12,7 @@ app = Flask(__name__)
 import os
 print(os.getcwd())
 gfw = GFW()
-with open(r'D:\Blog\blog-flask\sensitivewords.txt', "r") as f:
+with open(r'E:\blogCMS\blog-flask\sensitivewords.txt', "r") as f:
     lines = f.read().splitlines()
     gfw.set(lines)
 CORS(app, supports_credentials=True)
@@ -425,6 +426,107 @@ def changephoto():
         }
     return jsonify(resdata)
 
+@app.route('/api/select/admin', methods=['GET'])
+def admin_select():
+    admin_id = ''
+    print('request args:', request.args)
+    if request.args is not None:
+        data = request.args.to_dict()
+        admin_id = data.get('admin_id')
+    admin = Admin()
+    result = admin.select_admin_without_password(admin_id)
+    # print(result)
+    if len(result) == 1:
+        resData = ResData(200, result, 'fetch succeed')
+    else:
+        resData = ResData(400, '', 'fetch failed')
+    return jsonify(resData)
+
+@app.route('/api/fix/admin', methods=['POST'])
+def fixadmin():
+    if request.args is not None:
+        data = request.get_data()
+        data = json.loads(data)
+        adminid = data['admin_id']
+        admin_id = str(adminid)
+        data['admin_id'] = admin_id
+        admin = Admin()
+        result = admin.select_admin_without_password(adminid)
+        print(data)
+        if len(result) == 1:
+            result = admin.fix_admin_information(data)
+            if result == 1:
+                resData = ResData(200, '', 'Fix succeed! please login with your new password!')
+            else:
+                resData = ResData(200, '', 'Fix failed! There must be some problems with our back end.')
+        else:
+            resData = ResData(400, '', 'We cannot certify witch account you are fixing.')
+        return jsonify(resData)
+
+@app.route('/api/delete/user', methods=['POST'])
+def deleteuser():
+    if request.args is not None:
+        data = request.get_data()
+        data = json.loads(data)
+        user_id = data['user_id']
+        user_id = str(user_id)
+        #print(user_id)
+        user = User()
+        result = user.delete_user_with_id(user_id)
+        if result == 1:
+            resData = ResData(200, '', 'Delete success!')
+            return jsonify(resData)
+        else:
+            resData = ResData(200, '', 'Delete failed!')
+            return jsonify(resData)
+
+@app.route('/api/select/report/page', methods=['POST'])
+def selectreportbypage():
+    pagesize = 10
+    datas = request.get_data()
+    datas = json.loads(datas)
+    data = {}
+    for k, v in datas.items():
+        if k != 'page':
+            data[k] = v
+    print(data)
+    page = int(datas['page']) - 1
+    report = Report()
+    result = report.select_report_with_conditions(data)
+    total = int(len(result))#int(len(result) / pagesize) + 1
+    tempresult = []
+    #print(result)
+    if page * pagesize > len(result):
+        result = ''
+    else:
+        pageend = 0
+        if (page + 1) * pagesize > len(result):
+            pageend = len(result)
+        else:
+            pageend = (page + 1) * pagesize
+        i = page * pagesize
+        j = 0
+        while i < pageend:
+            tempresult.append(result[i])
+            i = i + 1
+        result = tempresult
+    result.append({'total': total})
+    #print(result)
+    resData = ResData(200, result, 'select succeed')
+    return jsonify(resData)
+
+@app.route('/api/delete/report', methods=['POST'])
+def deletereport():
+    if request.args is not None:
+        data = request.get_data()
+        data = json.loads(data)
+        blog_id = data['blog_id']
+        blog_id = str(blog_id)
+        #print(user_id)
+        report = Report()
+        result = report.delete_report_with_id(blog_id)
+        resData = ResData(200, '', 'Delete success!')
+        return jsonify(resData)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -33,3 +33,39 @@ class Admin:
             result = False
             print('there is no administrator where adminid="%s" and password="%s"!!' % (adminid, password))
         return result
+
+    def select_admin_without_password(self, adminid):
+        select_sql = 'select * from admin where admin_id="%s";' % adminid
+        self.cursor.execute(select_sql)
+        result = self.cursor.fetchall()
+        return result
+
+    def fix_admin_information(self, data: dict):
+        admin_id = data['admin_id']
+        strs = []
+        set = ""
+        for k, v in data.items():
+            if v != '':
+                if k != 'admin_id':
+                    str = k + "=" + "'" + v + "'"
+                    strs.append(str)
+        for i in range(len(strs)):
+            if i != len(strs) - 1:
+                set = set + strs[i] + ", "
+            else:
+                set = set + strs[i]
+        try:
+            if set != "":
+                fix_user_sql = "update admin set " + set + " where admin_id=" + "'" + admin_id + "';"
+                print(fix_user_sql)
+                result = self.cursor.execute(fix_user_sql)
+                self.conn.commit()
+                print("number changed: ", result)
+            else:
+                return 0
+            print('success')
+        except:
+            print('failed')
+            result = 0
+        finally:
+            return result
