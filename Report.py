@@ -57,3 +57,36 @@ class Report:
             result = 0
         finally:
             return result
+
+    def insert_report(self, data: dict) -> bool:
+        keys = ''
+        values = ''
+        for k, v in data.items():
+            if k != 'blog_id':
+                keys += k
+                keys += ','
+                values += "'"
+                values += v
+                values += "'"
+                values += ','
+            else:
+                keys += k
+                keys += ','
+                values += str(v)
+                values += ','
+        keys = keys[:-1]
+        values = values[:-1]
+        insert_report_sql = "INSERT INTO report({}) values({});".format(keys, values)
+        print(insert_report_sql)
+        # 执行mysql语句，如果插入成功，则注册成功，否则注册失败
+        try:
+            self.cursor.execute(insert_report_sql)
+            self.conn.commit()
+            print('report success!')
+            result = True
+        except:
+            print('report failed!')
+            self.conn.rollback()
+            result = False
+        finally:
+            return result

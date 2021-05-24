@@ -606,5 +606,19 @@ def deletecomment():
             resData = ResData(400, '', '数据库侧不存在该评论')
         return jsonify(resData)
 
+@app.route('/api/report/article', methods=['POST'])
+def report():
+    data = request.get_data()
+    data = json.loads(data)
+    #print(data)
+    report = Report()
+    result = report.insert_report(data)
+    if result == 1:
+        resData = ResData(200, '', 'Report success!')
+        return resData
+    else:
+        resData = ResData(200, '', 'Report failed!')
+        return resData
+
 if __name__ == '__main__':
     app.run(debug=True)
