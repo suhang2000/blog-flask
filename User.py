@@ -166,6 +166,12 @@ class User:
         result = self.cursor.fetchall()
         return result
 
+    def getInfoByUsername(self, username) -> dict:
+        sql = 'select * from user where username = "%s";' % username
+        self.cursor.execute(sql)
+        result = self.cursor.fetchone()
+        return result
+
     def select_user_byname(self, username):
         # print('select user')
         # mysql语句

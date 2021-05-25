@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from markupsafe import escape
 from flask_cors import CORS
 import json
 from itsdangerous import URLSafeTimedSerializer
@@ -144,6 +145,18 @@ def register():
             result = user.insert_user(data)
             if result:
                 resData = ResData(200, '', '注册成功')
+    return jsonify(resData)
+
+
+@app.route('/api/home/user/<username>')
+def getUserInfo(username):
+    username = escape(username)
+    user = User()
+    userInfo = user.getInfoByUsername(username)
+    if userInfo['user_password']:
+        userInfo.pop('user_password')
+    resData = ResData(200, userInfo, 'success')
+    print(resData)
     return jsonify(resData)
 
 
