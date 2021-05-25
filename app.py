@@ -8,12 +8,11 @@ from Admin import Admin
 from Report import Report
 from util import ResData
 from sensitiveDetection import GFW
+import os
 
 app = Flask(__name__)
-import os
-print(os.getcwd())
 gfw = GFW()
-import os
+
 with open(os.path.join(os.path.dirname(__file__), 'sensitivewords.txt'), "r") as f:
     lines = f.read().splitlines()
     gfw.set(lines)
@@ -187,9 +186,9 @@ def selectarticlebypage():
     page = int(datas['page']) - 1
     blog = Blog()
     result = blog.select_blog_with_conditions(data)
-    total = int(len(result))#int(len(result) / pagesize) + 1
+    total = int(len(result))  # int(len(result) / pagesize) + 1
     tempresult = []
-    #print(result)
+    # print(result)
     if page * pagesize > len(result):
         result = ''
     else:
@@ -205,9 +204,10 @@ def selectarticlebypage():
             i = i + 1
         result = tempresult
     result.append({'total': total})
-    #print(result)
+    # print(result)
     resData = ResData(200, result, 'select succeed')
     return jsonify(resData)
+
 
 @app.route('/api/add/article', methods=['POST'])
 def addarticle():
@@ -215,17 +215,18 @@ def addarticle():
         data = request.get_data()
         data = json.loads(data)
         for k, v in data.items():
-            if(len(gfw.check(str(v)))>0):
+            if (len(gfw.check(str(v))) > 0):
                 resData = ResData(400, '', '文本中存在敏感词')
                 return jsonify(resData)
         blog = Blog()
-        #print(data)
+        # print(data)
         result = blog.insert_blog(data)
         if result == 1:
             resData = ResData(200, '', '添加成功')
         else:
             resData = ResData(400, '', '数据库侧出现错误')
         return jsonify(resData)
+
 
 @app.route('/api/fix/article', methods=['POST'])
 def fixarticle():
@@ -241,7 +242,7 @@ def fixarticle():
         data['blog_id'] = u_id
         blog = Blog()
         result = blog.select_blog_with_conditions({'blog_id': data['blog_id']})
-        #print(data)
+        # print(data)
         if len(result) == 1:
             result = blog.fix_blog_information(data)
             if result == 1:
@@ -274,10 +275,10 @@ def deletearticle():
             resData = ResData(400, '', '数据库侧不存在该博客')
         return jsonify(resData)
 
+
 @app.route('/api/userInfo_select', methods=['GET'])
 def select_byname():
     uname = ''
-    print('request args:', request.args)
     if request.args is not None:
         data = request.args.to_dict()
         uname = data.get('username')
@@ -428,6 +429,7 @@ def changephoto():
         }
     return jsonify(resdata)
 
+
 @app.route('/api/select/admin', methods=['GET'])
 def admin_select():
     admin_id = ''
@@ -443,6 +445,7 @@ def admin_select():
     else:
         resData = ResData(400, '', 'fetch failed')
     return jsonify(resData)
+
 
 @app.route('/api/fix/admin', methods=['POST'])
 def fixadmin():
@@ -465,6 +468,7 @@ def fixadmin():
             resData = ResData(400, '', 'We cannot certify witch account you are fixing.')
         return jsonify(resData)
 
+
 @app.route('/api/delete/user', methods=['POST'])
 def deleteuser():
     if request.args is not None:
@@ -472,7 +476,7 @@ def deleteuser():
         data = json.loads(data)
         user_id = data['user_id']
         user_id = str(user_id)
-        #print(user_id)
+        # print(user_id)
         user = User()
         result = user.delete_user_with_id(user_id)
         if result == 1:
@@ -481,6 +485,7 @@ def deleteuser():
         else:
             resData = ResData(200, '', 'Delete failed!')
             return jsonify(resData)
+
 
 @app.route('/api/select/report/page', methods=['POST'])
 def selectreportbypage():
@@ -495,9 +500,9 @@ def selectreportbypage():
     page = int(datas['page']) - 1
     report = Report()
     result = report.select_report_with_conditions(data)
-    total = int(len(result))#int(len(result) / pagesize) + 1
+    total = int(len(result))  # int(len(result) / pagesize) + 1
     tempresult = []
-    #print(result)
+    # print(result)
     if page * pagesize > len(result):
         result = ''
     else:
@@ -513,9 +518,10 @@ def selectreportbypage():
             i = i + 1
         result = tempresult
     result.append({'total': total})
-    #print(result)
+    # print(result)
     resData = ResData(200, result, 'select succeed')
     return jsonify(resData)
+
 
 @app.route('/api/delete/report', methods=['POST'])
 def deletereport():
@@ -524,11 +530,12 @@ def deletereport():
         data = json.loads(data)
         blog_id = data['blog_id']
         blog_id = str(blog_id)
-        #print(user_id)
+        # print(user_id)
         report = Report()
         result = report.delete_report_with_id(blog_id)
         resData = ResData(200, '', 'Delete success!')
         return jsonify(resData)
+
 
 @app.route('/api/select/comments/page', methods=['POST'])
 def selectcommentsbypage():
@@ -543,9 +550,9 @@ def selectcommentsbypage():
     page = int(datas['page']) - 1
     comments = Comments()
     result = comments.select_comment_with_conditions(data)
-    total = int(len(result))#int(len(result) / pagesize) + 1
+    total = int(len(result))  # int(len(result) / pagesize) + 1
     tempresult = []
-    #print(result)
+    # print(result)
     if page * pagesize > len(result):
         result = ''
     else:
@@ -561,7 +568,7 @@ def selectcommentsbypage():
             i = i + 1
         result = tempresult
     result.append({'total': total})
-    #print(result)
+    # print(result)
     resData = ResData(200, result, 'select succeed')
     return jsonify(resData)
 
@@ -572,11 +579,11 @@ def addcomment():
         data = request.get_data()
         data = json.loads(data)
         for k, v in data.items():
-            if(len(gfw.check(str(v)))>0):
+            if (len(gfw.check(str(v))) > 0):
                 resData = ResData(400, '', '文本中存在敏感词')
                 return jsonify(resData)
         comments = Comments()
-        #print(data)
+        # print(data)
         result = comments.insert_comment(data)
         if result == 1:
             resData = ResData(200, '', '评论成功')
@@ -606,11 +613,12 @@ def deletecomment():
             resData = ResData(400, '', '数据库侧不存在该评论')
         return jsonify(resData)
 
+
 @app.route('/api/report/article', methods=['POST'])
 def report():
     data = request.get_data()
     data = json.loads(data)
-    #print(data)
+    # print(data)
     report = Report()
     result = report.insert_report(data)
     if result == 1:
@@ -619,6 +627,7 @@ def report():
     else:
         resData = ResData(200, '', 'Report failed!')
         return resData
+
 
 if __name__ == '__main__':
     app.run(debug=True)
