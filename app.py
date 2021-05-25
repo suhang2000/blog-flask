@@ -1,22 +1,79 @@
-from Comments import Comments
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import json
+from itsdangerous import URLSafeTimedSerializer
 from Blog import Blog
+from Comments import Comments
 from User import User
 from Admin import Admin
 from Report import Report
 from util import ResData
 from sensitiveDetection import GFW
+from flask_mail import Mail, Message
+from config import MAIL_CONFIG
 import os
 
 app = Flask(__name__)
+app.config.update(MAIL_CONFIG)
+mail = Mail(app)
+print(os.getcwd())
 gfw = GFW()
 
 with open(os.path.join(os.path.dirname(__file__), 'sensitivewords.txt'), "r") as f:
     lines = f.read().splitlines()
     gfw.set(lines)
 CORS(app, supports_credentials=True)
+
+
+def generate_confirmation_token(email):
+    serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+    return serializer.dumps(email, app.config["SECURITY_PASSWORD_SALT"])
+
+
+def confirm_token(token, expiration=300):
+    serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+    try:
+        email = serializer.loads(
+            token,
+            salt=app.config['SECURITY_PASSWORD_SALT'],
+            max_age=expiration
+        )
+    except:
+        return False
+    return email
+
+
+@app.route('/api/sendEmail/', methods=['POST'])
+def send_mail():
+    data = request.get_data()
+    if data is not None:
+        data = json.loads(data)
+        print(data)
+        email = data.get('email')
+        print(email)
+        user = User()
+        if user.get_user_info_by_email(email):
+            msg = Message("验证密码", sender=app.config["MAIL_USERNAME"], recipients=[email])
+            token = generate_confirmation_token(email)
+            msg.body = "您正在重置博客密码\nhttp://127.0.0.1:5000/api/verifyToken/{}".format(token)
+            print(msg)
+            mail.send(msg)
+            return ResData(200, '', '请在五分钟内到邮箱重置密码')
+        else:
+            return ResData(400, '', '邮箱未注册!')
+
+
+@app.route('/api/verifyToken/<token>')
+def verify_token(token):
+    email = confirm_token(token)
+    user = User()
+    if email:
+        result = user.reset_password(email)
+        if result:
+            return ResData(200, '', '您的密码重置为123456，请尽快修改密码')
+        else:
+            return ResData(400, '', '密码修改失败！')
+
 
 """
 接口说明：
@@ -30,12 +87,13 @@ CORS(app, supports_credentials=True)
 """
 
 
-@app.route('/api/login/user', methods=['GET'])
+@app.route('/api/login/user', methods=['POST'])
 def login():
     username = ''
     user_password = ''
-    if request.args is not None:
-        data = request.args.to_dict()
+    data = request.get_data()
+    if data is not None:
+        data = json.loads(data)
         username = data.get('username')
         user_password = data.get('user_password')
     user = User()
@@ -48,13 +106,15 @@ def login():
     return jsonify(resData)
 
 
-@app.route('/api/login/admin', methods=['GET'])
+@app.route('/api/login/admin', methods=['post'])
 def admin_login():
     admin_id = ''
     admin_password = ''
-    print('request args:', request.args)
-    if request.args is not None:
-        data = request.args.to_dict()
+    data = request.get_data()
+    print(data)
+    if data is not None:
+        data = json.loads(data)
+        print(data)
         admin_id = data.get('admin_id')
         admin_password = data.get('admin_password')
     admin = Admin()
@@ -78,6 +138,8 @@ def register():
         print(user_info)
         if user_info:
             resData = ResData(400, '', '用户已存在')
+        elif user.get_user_info_by_email(data.get('email')):
+            resData = ResData(400, '', '邮箱已被占用')
         else:
             result = user.insert_user(data)
             if result:

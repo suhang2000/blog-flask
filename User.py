@@ -84,6 +84,26 @@ class User:
         self.cursor.execute(get_user_info_sql)
         return self.cursor.fetchone()
 
+    def reset_password(self, email) -> bool:
+        reset_password_sql = "UPDATE user SET user_password='123456' where email='{}'".format(email)
+        self.cursor.execute(reset_password_sql)
+        try:
+            self.conn.commit()
+            print('success')
+            result = True
+        except:
+            self.conn.rollback()
+            result = False
+        return result
+
+    def get_user_info_by_email(self, email, word='*') -> dict:
+        get_user_info_sql = "SELECT {} from user WHERE email='{}'".format(word, email)
+        print(get_user_info_sql)
+        self.cursor.execute(get_user_info_sql)
+        user_info = self.cursor.fetchone()
+        print(user_info)
+        return user_info
+
     def select_user_with_conditions(self, data: dict):
         strs = []
         condition = ""
