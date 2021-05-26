@@ -61,6 +61,23 @@ class User:
         finally:
             return result
 
+    def update_user_info(self, data: dict) -> bool:
+        username = data['username']
+        phone_number = data['phone_number']
+        gender = data['gender']
+        sql = "UPDATE user SET phone_number='{}', gender='{}' WHERE username='{}'".format(phone_number, gender, username)
+        try:
+            self.cursor.execute(sql)
+            self.conn.commit()
+            print('success')
+            result = True
+        except:
+            print('failed')
+            self.conn.rollback()
+            result = False
+        finally:
+            return result
+
     def update_user(self, data: dict, user_id) -> bool:
         for key, value in data.items():
             update_user_sql = "UPDATE user SET {}='{}' WHERE user_id={};".format(key, value, user_id)
@@ -244,12 +261,13 @@ class User:
         # mysql语句
         update_user_sql = 'update user set profile_photo = ' + "%s " + ' WHERE username = %s ;'
         # 执行mysql语句
-        result = self.cursor.execute(update_user_sql, (newphoto, username))
-        print(result)
-        self.conn.commit()
-        if 1 == result:
+        try:
+            self.cursor.execute(update_user_sql, (newphoto, username))
+            self.conn.commit()
+            print('success')
             result = True
-        else:
+        except:
+            self.conn.rollback()
             result = False
         return result
 

@@ -160,6 +160,33 @@ def getUserInfo(username):
     return jsonify(resData)
 
 
+@app.route('/api/home/user/info', methods=['POST'])
+def resetUserInfo():
+    resData = ResData(400, '', 'failed')
+    data = request.get_data()
+    if data is not None:
+        data = json.loads(data)
+        print('user info: ', data)
+        user = User()
+        if user.update_user_info(data):
+            resData = ResData(200, '', 'success')
+    return jsonify(resData)
+
+
+@app.route('/api/home/user/avatar', methods=['POST'])
+def changeAvatar():
+    resData = ResData(400, '', 'failed')
+    data = request.get_data()
+    if data is not None:
+        data = json.loads(data)
+        print('avatar: ', data)
+        username = data['username']
+        avatar = data['profile_photo']
+        user = User()
+        if user.changephoto_byname(avatar, username):
+            resData = ResData(200, '', 'success')
+    return jsonify(resData)
+
 @app.route('/api/resetpwd/user', methods=['POST'])
 def reset_user_pwd():
     data = request.get_data()
