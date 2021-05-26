@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect, url_for
 from markupsafe import escape
 from flask_cors import CORS
 import json
@@ -31,7 +31,7 @@ def generate_confirmation_token(email):
     return serializer.dumps(email, app.config["SECURITY_PASSWORD_SALT"])
 
 
-def confirm_token(token, expiration=300):
+def confirm_token(token, expiration=30000):
     serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
     try:
         email = serializer.loads(
@@ -49,31 +49,34 @@ def send_mail():
     data = request.get_data()
     if data is not None:
         data = json.loads(data)
-        print(data)
         email = data.get('email')
-        print(email)
         user = User()
         if user.get_user_info_by_email(email):
             msg = Message("验证密码", sender=app.config["MAIL_USERNAME"], recipients=[email])
             token = generate_confirmation_token(email)
-            msg.body = "您正在重置博客密码\nhttp://127.0.0.1:5000/api/verifyToken/{}".format(token)
-            print(msg)
+            msg.body = "密码找回\n点击以下链接重置密码\nhttp://localhost:8080/#/emailVerify/?token={}".format(token)
             mail.send(msg)
             return ResData(200, '', '请在五分钟内到邮箱重置密码')
         else:
             return ResData(400, '', '邮箱未注册!')
 
 
-@app.route('/api/verifyToken/<token>')
-def verify_token(token):
-    email = confirm_token(token)
+@app.route('/api/verifyToken', methods=['post'])
+def verify_token():
+    data = request.get_data()
+    data = json.loads(data)
+    try:
+        email = confirm_token(data.get('token'))
+    except:
+        return ResData(400, '', '密码重置失败')
     user = User()
     if email:
         result = user.reset_password(email)
+        user_info = user.get_user_info_by_email(email)
         if result:
-            return ResData(200, '', '您的密码重置为123456，请尽快修改密码')
+            return ResData(200, '', '您的用户名为：' + user_info['username'] + "\n您的密码已重置为：123456\n请尽快修改密码")
         else:
-            return ResData(400, '', '密码修改失败！')
+            return ResData(400, '', '密码重置失败')
 
 
 """
@@ -103,7 +106,6 @@ def login():
         resData = ResData(200, username, '登录成功')
     else:
         resData = ResData(400, '', '登录失败')
-    print(result)
     return jsonify(resData)
 
 
