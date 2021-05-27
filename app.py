@@ -501,6 +501,8 @@ def change_username():
         username = data.get('username')
         username_new = data.get('username_new')
         user = User()
+        if username_new == '':
+            return jsonify(ResData(400, '', '不能为空'))
         if user.get_user_info_by_name(username_new):
             return jsonify(ResData(400, '', '昵称已被占用'))
         else:
