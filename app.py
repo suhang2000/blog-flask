@@ -22,7 +22,6 @@ import os
 app = Flask(__name__)
 app.config.update(MAIL_CONFIG)
 mail = Mail(app)
-print(os.getcwd())
 gfw = GFW()
 
 with open(os.path.join(os.path.dirname(__file__), 'sensitivewords.txt'), "r") as f:
