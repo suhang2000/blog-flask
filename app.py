@@ -96,7 +96,7 @@ def send_code():
         last_send_time = int(token_info['time'])
 
         if token_info is not None and current_send_time - last_send_time < 60:
-            return ResData(400, '', '请过{}秒尝试'.format(int(60 - current_send_time + last_send_time)))
+            return ResData(400, '', '请过{}秒尝试'.format(60 - (current_send_time - last_send_time)))
         else:
             msg = Message("验证密码", sender=app.config["MAIL_USERNAME"], recipients=[email])
             code = str(uuid.uuid1())[:6]
@@ -264,7 +264,7 @@ def selectuser():
 
 @app.route('/api/select/user/page', methods=['POST'])
 def selectuserbypage():
-    pagesize = 10
+    pagesize = 5
     datas = request.get_data()
     datas = json.loads(datas)
     data = {}
@@ -322,7 +322,7 @@ def fixuser():
 
 @app.route('/api/select/article/page', methods=['POST'])
 def selectarticlebypage():
-    pagesize = 2
+    pagesize = 5
     datas = request.get_data()
     datas = json.loads(datas)
     data = {}
@@ -681,7 +681,7 @@ def deleteuser():
 
 @app.route('/api/select/report/page', methods=['POST'])
 def selectreportbypage():
-    pagesize = 10
+    pagesize = 5
     datas = request.get_data()
     datas = json.loads(datas)
     data = {}
@@ -731,7 +731,7 @@ def deletereport():
 
 @app.route('/api/select/comments/page', methods=['POST'])
 def selectcommentsbypage():
-    pagesize = 2
+    pagesize = 5
     datas = request.get_data()
     datas = json.loads(datas)
     data = {}
@@ -814,10 +814,10 @@ def report():
     report = Report()
     result = report.insert_report(data)
     if result == 1:
-        resData = ResData(200, '', 'Report success!')
+        resData = ResData(200, '', '举报成功!')
         return resData
     else:
-        resData = ResData(200, '', 'Report failed!')
+        resData = ResData(200, '', '举报失败!')
         return resData
 
 
