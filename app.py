@@ -594,7 +594,7 @@ def changepsd():
         resdata = {
             "code": 400,
             "data": '',
-            "message": '修改密码失败'
+            "message": '新密码与原密码相同，请输入不同的密码'
         }
     return jsonify(resdata)
 
