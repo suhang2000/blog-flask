@@ -96,7 +96,7 @@ def send_code():
         last_send_time = int(token_info['time'])
 
         if token_info is not None and current_send_time - last_send_time < 60:
-            return ResData(400, '', '请过{}秒在尝试'.format(current_send_time - last_send_time))
+            return ResData(400, '', '请过{}秒尝试'.format(int(60 - current_send_time + last_send_time)))
         else:
             msg = Message("验证密码", sender=app.config["MAIL_USERNAME"], recipients=[email])
             code = str(uuid.uuid1())[:6]
@@ -501,10 +501,13 @@ def change_username():
         username = data.get('username')
         username_new = data.get('username_new')
         user = User()
-        if user.changename_byname(username_new, username):
-            return jsonify(ResData(200, '', '昵称修改成功'))
+        if user.get_user_info_by_name(username_new):
+            return jsonify(ResData(400, '', '昵称已被占用'))
         else:
-            return jsonify(ResData(200, '', '昵称修改失败'))
+            if user.changename_byname(username_new, username):
+                return jsonify(ResData(200, '', '昵称修改成功'))
+            else:
+                return jsonify(ResData(200, '', '昵称修改失败'))
 
 
 @app.route('/api/changeemail', methods=['post'])
@@ -516,16 +519,19 @@ def change_email():
         email = data.get('email')
         user = User()
         user_info = user.get_user_info_by_name(username)
-        if user_info:
-            email_now = user_info['email']
-            if user.change_email_by_name(email, username):
-                token = Token()
-                token.update_email_by_email(email_now)
-                return jsonify(ResData(200, '', '邮箱修改成功'))
+        if user.get_user_info_by_email(email):
+            return jsonify(ResData(400, '', '邮箱已被占用'))
+        else:
+            if user_info:
+                email_now = user_info['email']
+                if user.change_email_by_name(email, username):
+                    token = Token()
+                    token.update_email_by_email(email_now)
+                    return jsonify(ResData(200, '', '邮箱修改成功'))
+                else:
+                    return jsonify(ResData(200, '', '邮箱修改失败'))
             else:
                 return jsonify(ResData(200, '', '邮箱修改失败'))
-        else:
-            return jsonify(ResData(200, '', '邮箱修改失败'))
 
 
 @app.route('/api/changenum', methods=['GET'])
