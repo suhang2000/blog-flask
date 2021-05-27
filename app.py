@@ -1,3 +1,4 @@
+import re
 import uuid
 from time import time
 
@@ -124,6 +125,7 @@ def verify_code():
             elif current_time - token_info['time'] > 60:
                 return jsonify(ResData(400, '', '验证码已失效'))
             else:
+                token.update_token(email, str(uuid.uuid1())[:6], token_info['time'])
                 return jsonify(ResData(200, '', '验证成功'))
         else:
             return jsonify(ResData(400, '', '验证失败'))
@@ -523,6 +525,8 @@ def change_email():
         user_info = user.get_user_info_by_name(username)
         if email == '':
             return jsonify(ResData(400, '', '不能为空'))
+        if re.match("^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3})(\\]?)$", email) is not None:
+            return jsonify(ResData(400, '', '邮箱格式不正确'))
         if user.get_user_info_by_email(email):
             return jsonify(ResData(400, '', '邮箱已被占用'))
         else:
