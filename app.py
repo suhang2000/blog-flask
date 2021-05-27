@@ -97,7 +97,7 @@ def send_code():
         last_send_time = int(token_info['time'])
 
         if token_info is not None and current_send_time - last_send_time < 60:
-            return ResData(400, '', '请过{}秒尝试'.format(60 - (current_send_time - last_send_time)))
+            return ResData(400, '', '请过{}秒尝试'.format(int(60 - (current_send_time - last_send_time))))
         else:
             msg = Message("验证密码", sender=app.config["MAIL_USERNAME"], recipients=[email])
             code = str(uuid.uuid1())[:6]
@@ -525,21 +525,24 @@ def change_email():
         user_info = user.get_user_info_by_name(username)
         if email == '':
             return jsonify(ResData(400, '', '不能为空'))
-        if re.match("^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3})(\\]?)$", email) is not None:
-            return jsonify(ResData(400, '', '邮箱格式不正确'))
-        if user.get_user_info_by_email(email):
-            return jsonify(ResData(400, '', '邮箱已被占用'))
-        else:
-            if user_info:
-                email_now = user_info['email']
-                if user.change_email_by_name(email, username):
-                    token = Token()
-                    token.update_email_by_email(email, email_now)
-                    return jsonify(ResData(200, '', '邮箱修改成功'))
+        ex_email = re.compile(r'^[\w][a-zA-Z1-9.]{4,19}@[a-zA-Z0-9]{2,3}.[com|gov|net]')
+        if ex_email.match(email):
+            if user.get_user_info_by_email(email):
+                return jsonify(ResData(400, '', '邮箱已被占用'))
+            else:
+                if user_info:
+                    email_now = user_info['email']
+                    if user.change_email_by_name(email, username):
+                        token = Token()
+                        token.update_email_by_email(email, email_now)
+                        return jsonify(ResData(200, '', '邮箱修改成功'))
+                    else:
+                        return jsonify(ResData(200, '', '邮箱修改失败'))
                 else:
                     return jsonify(ResData(200, '', '邮箱修改失败'))
-            else:
-                return jsonify(ResData(200, '', '邮箱修改失败'))
+        else:
+            return jsonify(ResData(400, '', '邮箱格式不正确'))
+
 
 
 @app.route('/api/changenum', methods=['GET'])
