@@ -49,7 +49,7 @@ class Token(object):
             return False
 
     def update_email_by_email(self, email_new, email):
-        sql = "update token set email='{}', where email='{}'".format(email_new, email)
+        sql = "update token set email='{}' where email='{}'".format(email_new, email)
         self.cursor.execute(sql)
         try:
             self.conn.commit()

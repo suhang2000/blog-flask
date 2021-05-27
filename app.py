@@ -530,7 +530,7 @@ def change_email():
                 email_now = user_info['email']
                 if user.change_email_by_name(email, username):
                     token = Token()
-                    token.update_email_by_email(email_now)
+                    token.update_email_by_email(email, email_now)
                     return jsonify(ResData(200, '', '邮箱修改成功'))
                 else:
                     return jsonify(ResData(200, '', '邮箱修改失败'))
