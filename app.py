@@ -537,9 +537,9 @@ def change_email():
                         token.update_email_by_email(email, email_now)
                         return jsonify(ResData(200, '', '邮箱修改成功'))
                     else:
-                        return jsonify(ResData(200, '', '邮箱修改失败'))
+                        return jsonify(ResData(400, '', '邮箱修改失败'))
                 else:
-                    return jsonify(ResData(200, '', '邮箱修改失败'))
+                    return jsonify(ResData(400, '', '邮箱修改失败'))
         else:
             return jsonify(ResData(400, '', '邮箱格式不正确'))
 
