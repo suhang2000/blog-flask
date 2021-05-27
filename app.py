@@ -175,15 +175,18 @@ def register():
         data = json.loads(data)
         print('data: ', data)
         user = User()
-        user_info = user.get_user_info_by_name(data.get('username'))
+        data = dict(data)
+        if data['phone_number'] == '':
+            data['phone_number'] = 'unknown'
+        user_info = user.get_user_info_by_name(data['username'])
         print(user_info)
         if user_info:
             resData = ResData(400, '', '用户已存在')
-        elif user.get_user_info_by_email(data.get('email')):
+        elif user.get_user_info_by_email(data['email']):
             resData = ResData(400, '', '邮箱已被占用')
         else:
             token = Token()
-            result = user.insert_user(data) and token.insert(data.get('email'))
+            result = user.insert_user(data) and token.insert(data['email'])
             if result:
                 resData = ResData(200, '', '注册成功')
     return jsonify(resData)
