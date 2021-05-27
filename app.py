@@ -1,3 +1,6 @@
+import uuid
+from time import time
+
 from flask import Flask, jsonify, request, redirect, url_for
 from markupsafe import escape
 from flask_cors import CORS
@@ -9,6 +12,7 @@ from User import User
 from Admin import Admin
 from Report import Report
 from util import ResData
+from VerificationCode import Token
 from sensitiveDetection import GFW
 from flask_mail import Mail, Message
 from config import MAIL_CONFIG
@@ -79,16 +83,50 @@ def verify_token():
             return ResData(400, '', '密码重置失败')
 
 
-"""
-接口说明：
-1.返回的是json数据
-2.结构如下
-{
-    code： 200, # 非200即错误
-    data： # 数据位置，一般为数组
-    message： '对本次请求的说明'
-}
-"""
+@app.route('/api/sendcode', methods=['POST'])
+def send_code():
+    data = request.get_data()
+    if data is not None:
+        data = json.loads(data)
+        email = data.get('email')
+        token = Token()
+        token_info = token.get_info_by_email(email)
+        current_send_time = time()
+        print(current_send_time)
+        last_send_time = int(token_info['time'])
+
+        if token_info is not None and current_send_time - last_send_time < 60:
+            return ResData(400, '', '请过{}秒在尝试'.format(current_send_time - last_send_time))
+        else:
+            msg = Message("验证密码", sender=app.config["MAIL_USERNAME"], recipients=[email])
+            code = str(uuid.uuid1())[:6]
+            if token.update_token(email, code, current_send_time):
+                msg.body = "修改验证信息\n您的验证码是：\n{}".format(code)
+                mail.send(msg)
+                return jsonify(ResData(200, '', '请在一分钟内到邮箱获取验证码并验证'))
+            else:
+                return jsonify(ResData(400, '', '发送失败'))
+
+
+@app.route('/api/verifycode', methods=['post'])
+def verify_code():
+    current_time = time()
+    data = request.get_data()
+    if data is not None:
+        data = json.loads(data)
+        email = data.get('email')
+        code = data.get('code')
+        token = Token()
+        token_info = token.get_info_by_email(email)
+        if token_info:
+            if code != token_info['code']:
+                return jsonify(ResData(400, '', '验证码错误'))
+            elif current_time - token_info['time'] > 60:
+                return jsonify(ResData(400, '', '验证码已失效'))
+            else:
+                return jsonify(ResData(200, '', '验证成功'))
+        else:
+            return jsonify(ResData(400, '', '验证失败'))
 
 
 @app.route('/api/login/user', methods=['POST'])
@@ -144,7 +182,8 @@ def register():
         elif user.get_user_info_by_email(data.get('email')):
             resData = ResData(400, '', '邮箱已被占用')
         else:
-            result = user.insert_user(data)
+            token = Token()
+            result = user.insert_user(data) and token.insert(data.get('email'))
             if result:
                 resData = ResData(200, '', '注册成功')
     return jsonify(resData)
@@ -188,6 +227,7 @@ def changeAvatar():
         if user.changephoto_byname(avatar, username):
             resData = ResData(200, '', 'success')
     return jsonify(resData)
+
 
 @app.route('/api/resetpwd/user', methods=['POST'])
 def reset_user_pwd():
@@ -450,6 +490,41 @@ def changegender():
     return jsonify(resdata)
 
 
+@app.route('/api/changename', methods=['post'])
+def change_username():
+    data = request.get_data()
+    if data is not None:
+        data = json.loads(data)
+        username = data.get('username')
+        username_new = data.get('username_new')
+        user = User()
+        if user.changename_byname(username_new, username):
+            return jsonify(ResData(200, '', '昵称修改成功'))
+        else:
+            return jsonify(ResData(200, '', '昵称修改失败'))
+
+
+@app.route('/api/changeemail', methods=['post'])
+def change_email():
+    data = request.get_data()
+    if data is not None:
+        data = json.loads(data)
+        username = data.get('username')
+        email = data.get('email')
+        user = User()
+        user_info = user.get_user_info_by_name(username)
+        if user_info:
+            email_now = user_info['email']
+            if user.change_email_by_name(email, username):
+                token = Token()
+                token.update_email_by_email(email_now)
+                return jsonify(ResData(200, '', '邮箱修改成功'))
+            else:
+                return jsonify(ResData(200, '', '邮箱修改失败'))
+        else:
+            return jsonify(ResData(200, '', '邮箱修改失败'))
+
+
 @app.route('/api/changenum', methods=['GET'])
 def changenum():
     newnum = ''
@@ -582,7 +657,9 @@ def deleteuser():
         user_id = str(user_id)
         # print(user_id)
         user = User()
-        result = user.delete_user_with_id(user_id)
+        user_info = user.select_user_by_user_id(user_id)
+        token = Token()
+        result = user.delete_user_with_id(user_id) and token.delete_by_email(user_info['email'])
         if result == 1:
             resData = ResData(200, '', 'Delete success!')
             return jsonify(resData)

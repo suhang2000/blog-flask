@@ -65,7 +65,8 @@ class User:
         username = data['username']
         phone_number = data['phone_number']
         gender = data['gender']
-        sql = "UPDATE user SET phone_number='{}', gender='{}' WHERE username='{}'".format(phone_number, gender, username)
+        sql = "UPDATE user SET phone_number='{}', gender='{}' WHERE username='{}'".format(phone_number, gender,
+                                                                                          username)
         try:
             self.cursor.execute(sql)
             self.conn.commit()
@@ -208,9 +209,31 @@ class User:
         update_user_sql = 'update user set username = ' + "%s " + ' WHERE username = %s ;'
         # 执行mysql语句
         result = self.cursor.execute(update_user_sql, (newname, username))
-        self.conn.commit()
+
         if 1 == result:
-            result = True
+            try:
+                self.conn.commit()
+                result = True
+            except:
+                self.conn.rollback()
+                result = False
+        else:
+            result = False
+        return result
+
+    def change_email_by_name(self, email, username):
+        # print('select user')
+        # mysql语句
+        update_user_sql = 'update user set email = ' + "%s " + ' WHERE username = %s ;'
+        # 执行mysql语句
+        result = self.cursor.execute(update_user_sql, (email, username))
+        if 1 == result:
+            try:
+                self.conn.commit()
+                result = True
+            except:
+                self.conn.rollback()
+                result = False
         else:
             result = False
         return result
@@ -282,3 +305,11 @@ class User:
             result = 0
         finally:
             return result
+
+    def select_user_by_user_id(self, user_id):
+        user_info = ''
+        sql = "select * from user where user_id = '{}'".format(user_id)
+        result = self.cursor.execute(sql)
+        if result == 1:
+            user_info = self.cursor.fetchone()
+        return user_info
