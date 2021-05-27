@@ -521,6 +521,8 @@ def change_email():
         email = data.get('email')
         user = User()
         user_info = user.get_user_info_by_name(username)
+        if email == '':
+            return jsonify(ResData(400, '', '不能为空'))
         if user.get_user_info_by_email(email):
             return jsonify(ResData(400, '', '邮箱已被占用'))
         else:
