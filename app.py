@@ -680,10 +680,10 @@ def deleteuser():
         token = Token()
         result = user.delete_user_with_id(user_id) and token.delete_by_email(user_info['email'])
         if result == 1:
-            resData = ResData(200, '', 'Delete success!')
+            resData = ResData(200, '', '删除成功!')
             return jsonify(resData)
         else:
-            resData = ResData(200, '', 'Delete failed!')
+            resData = ResData(200, '', '删除失败')
             return jsonify(resData)
 
 
